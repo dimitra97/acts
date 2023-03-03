@@ -9,11 +9,11 @@
 #include "Acts/Detector/Detector.hpp"
 #include "Acts/Geometry/TrackingGeometry.hpp"
 #include "Acts/MagneticField/MagneticFieldProvider.hpp"
+#include "Acts/Plugins/Geant4/Geant4Converters.hpp"
 #include "Acts/Plugins/Geant4/Geant4DetectorElement.hpp"
 #include "Acts/Plugins/Geant4/Geant4DetectorSurfaceFactory.hpp"
 #include "Acts/Plugins/Geant4/Geant4PhysicalVolumeSelectors.hpp"
 #include "Acts/Plugins/Python/Utilities.hpp"
-#include "Acts/Utilities/Logger.hpp"
 #include "ActsExamples/Framework/IContextDecorator.hpp"
 #include "ActsExamples/Geant4/GdmlDetectorConstruction.hpp"
 #include "ActsExamples/Geant4/Geant4Simulation.hpp"
@@ -50,6 +50,7 @@ using namespace Acts;
 
 namespace Acts::Python {
 void addGeant4HepMC3(Context& ctx);
+
 }
 
 PYBIND11_MODULE(ActsPythonBindingsGeant4, mod) {
@@ -240,40 +241,66 @@ PYBIND11_MODULE(ActsPythonBindingsGeant4, mod) {
     ACTS_PYTHON_MEMBER(passiveSurfaceSelector);
     ACTS_PYTHON_STRUCT_END();
   }
-  {
-    py::class_<Acts::Geant4DetectorElement,
-               std::shared_ptr<Acts::Geant4DetectorElement>>(
-        mod, "Geant4DetectorElement");
 
+  {
+    auto gde =
+        py::class_<Acts::Geant4DetectorElement,
+                   std::shared_ptr<Acts::Geant4DetectorElement>>(
+            mod, "Geant4DetectorElement")
+            .def(py::init<std::shared_ptr<Surface>, const G4VPhysicalVolume&,
+                          const Transform3&, ActsScalar>())
+
+            .def("g4PhysicalVolume",
+                 &Acts::Geant4DetectorElement::g4PhysicalVolume,
+                 py::return_value_policy::reference)
+
+            .def("transform", &Acts::Geant4DetectorElement::transform)
+            // [](Acts::Geant4DetectorElement& self){ return
+            // self.transform(Acts::GeometryContext{});
+            // }
+
+            .def("surface", &Acts::Geant4DetectorElement::surface,
+                 py::return_value_policy::reference)
+
+            .def("thickness", &Acts::Geant4DetectorElement::thickness);
+  }
+
+  {
+    auto gc = py::class_<Acts::Geant4PhysicalVolumeConverter>(
+                  mod, "Geant4PhysicalVolumeConverter")
+                  .def(py::init<Surface::SurfaceType>())
+
+                  .def("surface", &Acts::Geant4PhysicalVolumeConverter::surface)
+
+                  .def("surface_conv",
+                       &Acts::Geant4PhysicalVolumeConverter::surface_conv);
+  }
+
+  {
     using Geant4Detector = ActsExamples::Geant4::Geant4Detector;
 
     auto g =
         py::class_<Geant4Detector, std::shared_ptr<Geant4Detector>>(
             mod, "Geant4Detector")
             .def(py::init<>())
-            .def(
-                "constructDetector",
-                [](Geant4Detector& self, const Geant4Detector::Config& cfg,
-                   Logging::Level logLevel) {
-                  auto logger = getDefaultLogger("Geant4Detector", logLevel);
-                  return self.constructDetector(cfg, *logger);
-                },
-                py::arg("cfg"), py::arg("logLevel") = Logging::INFO)
-            .def(
-                "constructTrackingGeometry",
-                [](Geant4Detector& self, const Geant4Detector::Config& cfg,
-                   Logging::Level logLevel) {
-                  auto logger = getDefaultLogger("Geant4Detector", logLevel);
-                  return self.constructTrackingGeometry(cfg, *logger);
-                },
-                py::arg("cfg"), py::arg("logLevel") = Logging::INFO);
+            // .def("constructDetector",
+            //      py::overload_cast<const Geant4Detector::Config&>(
+            //          &Geant4Detector::constructDetector))
+            .def("constructMsSlice",
+                 py::overload_cast<
+                     const ActsExamples::Geant4::Geant4Detector::Config&>(
+                     &ActsExamples::Geant4::Geant4Detector::constructMsSlice))
+
+            .def("constructTrackingGeometry",
+                 py::overload_cast<const Geant4Detector::Config&>(
+                     &Geant4Detector::constructTrackingGeometry));
 
     auto c = py::class_<Geant4Detector::Config>(g, "Config").def(py::init<>());
     ACTS_PYTHON_STRUCT_BEGIN(c, Geant4Detector::Config);
     ACTS_PYTHON_MEMBER(name);
     ACTS_PYTHON_MEMBER(g4World);
     ACTS_PYTHON_MEMBER(g4SurfaceOptions);
-    ACTS_PYTHON_MEMBER(protoDetector);
+    // ACTS_PYTHON_MEMBER(protoDetector);
     ACTS_PYTHON_MEMBER(geometryIdentifierHook);
     ACTS_PYTHON_MEMBER(logLevel);
     ACTS_PYTHON_STRUCT_END();
