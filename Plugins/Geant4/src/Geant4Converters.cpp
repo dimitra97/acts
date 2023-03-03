@@ -9,9 +9,11 @@
 #include "Acts/Plugins/Geant4/Geant4Converters.hpp"
 
 #include "Acts/Definitions/Algebra.hpp"
+#include "Acts/Geometry/GeometryContext.hpp"
 #include "Acts/Material/HomogeneousSurfaceMaterial.hpp"
 #include "Acts/Material/Material.hpp"
 #include "Acts/Material/MaterialSlab.hpp"
+#include "Acts/Plugins/Geant4/Geant4DetectorElement.hpp"
 #include "Acts/Surfaces/CylinderBounds.hpp"
 #include "Acts/Surfaces/CylinderSurface.hpp"
 #include "Acts/Surfaces/DiscSurface.hpp"
@@ -236,6 +238,103 @@ std::shared_ptr<Acts::Surface> Acts::Geant4PhysicalVolumeConverter::surface(
   // Get the logical volume
   auto g4LogVol = g4PhysVol.GetLogicalVolume();
   auto g4Solid = g4LogVol->GetSolid();
+
+  auto assignMaterial = [&](Acts::Surface& sf, ActsScalar moriginal,
+                            ActsScalar mcompressed) -> void {
+    auto g4Material = g4LogVol->GetMaterial();
+    if (convertMaterial and g4Material != nullptr) {
+      if (compressed < 0.) {
+        mcompressed = moriginal;
+      }
+      auto surfaceMaterial = Geant4MaterialConverter{}.surfaceMaterial(
+          *g4Material, moriginal, mcompressed);
+      sf.assignSurfaceMaterial(surfaceMaterial);
+    }
+  };
+
+  // Dynamic cast chain & conversion
+  std::shared_ptr<Surface> surface = nullptr;
+
+  // Into a rectangle
+  auto g4Box = dynamic_cast<const G4Box*>(g4Solid);
+  if (g4Box != nullptr) {
+    if (forcedType == Surface::SurfaceType::Other or
+        forcedType == Surface::SurfaceType::Plane) {
+      auto [bounds, axes, original] =
+          Geant4ShapeConverter{}.rectangleBounds(*g4Box);
+      auto orientedToGlobal = axesOriented(toGlobal, axes);
+      surface = Acts::Surface::makeShared<PlaneSurface>(orientedToGlobal,
+                                                        std::move(bounds));
+      assignMaterial(*surface.get(), original, compressed);
+      return surface;
+    } else {
+      throw std::runtime_error("Can not convert 'G4Box' into forced shape.");
+    }
+  }
+
+  // Into a Trapezoid
+  auto g4Trd = dynamic_cast<const G4Trd*>(g4Solid);
+  if (g4Trd != nullptr) {
+    if (forcedType == Surface::SurfaceType::Other or
+        forcedType == Surface::SurfaceType::Plane) {
+      auto [bounds, axes, original] =
+          Geant4ShapeConverter{}.trapezoidBounds(*g4Trd);
+      auto orientedToGlobal = axesOriented(toGlobal, axes);
+      surface = Acts::Surface::makeShared<PlaneSurface>(orientedToGlobal,
+                                                        std::move(bounds));
+      assignMaterial(*surface.get(), original, compressed);
+      return surface;
+    } else {
+      throw std::runtime_error("Can not convert 'G4Trd' into forced shape.");
+    }
+  }
+
+  // Into a Cylinder, disc or line
+  auto g4Tubs = dynamic_cast<const G4Tubs*>(g4Solid);
+  if (g4Tubs != nullptr) {
+    ActsScalar diffR = g4Tubs->GetOuterRadius() - g4Tubs->GetInnerRadius();
+    ActsScalar diffZ = 2 * g4Tubs->GetZHalfLength();
+    // Detect if cylinder or disc case
+    ActsScalar original = 0.;
+    if (forcedType == Surface::SurfaceType::Cylinder or
+        (diffR < diffZ and forcedType == Surface::SurfaceType::Other)) {
+      auto [bounds, originalT] = Geant4ShapeConverter{}.cylinderBounds(*g4Tubs);
+      original = originalT;
+      surface = Acts::Surface::makeShared<CylinderSurface>(toGlobal,
+                                                           std::move(bounds));
+    } else if (forcedType == Surface::SurfaceType::Disc or
+               forcedType == Surface::SurfaceType::Other) {
+      auto [bounds, originalT] = Geant4ShapeConverter{}.radialBounds(*g4Tubs);
+      original = originalT;
+      surface =
+          Acts::Surface::makeShared<DiscSurface>(toGlobal, std::move(bounds));
+    } else if (forcedType == Surface::SurfaceType::Straw) {
+      auto bounds = Geant4ShapeConverter{}.lineBounds(*g4Tubs);
+      surface =
+          Acts::Surface::makeShared<StrawSurface>(toGlobal, std::move(bounds));
+
+    } else {
+      throw std::runtime_error("Can not convert 'G4Tubs' into forced shape.");
+    }
+    assignMaterial(*surface.get(), original, compressed);
+    return surface;
+  }
+
+  return nullptr;
+}
+
+std::shared_ptr<Acts::Surface>
+Acts::Geant4PhysicalVolumeConverter::surface_conv(
+    const G4VPhysicalVolume& g4PhysVol,
+    const Geant4DetectorElement& detectorelement, const GeometryContext& ctx,
+    bool convertMaterial, ActsScalar compressed) {
+  // Get the logical volume
+  auto g4LogVol = g4PhysVol.GetLogicalVolume();
+  auto g4Solid = g4LogVol->GetSolid();
+
+  auto toGlobal = detectorelement.transform(ctx);
+
+  std::cout << "forcedtype is" << forcedType << std::endl;
 
   auto assignMaterial = [&](Acts::Surface& sf, ActsScalar moriginal,
                             ActsScalar mcompressed) -> void {

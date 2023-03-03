@@ -10,6 +10,8 @@
 
 #include "Acts/Definitions/Algebra.hpp"
 #include "Acts/Definitions/Common.hpp"
+#include "Acts/Geometry/GeometryContext.hpp"
+#include "Acts/Plugins/Geant4/Geant4DetectorElement.hpp"
 #include "Acts/Surfaces/Surface.hpp"
 
 #include <memory>
@@ -144,6 +146,11 @@ struct Geant4PhysicalVolumeConverter {
                                    const Transform3& toGlobal,
                                    bool convertMaterial = false,
                                    ActsScalar compressed = 0.);
+
+  std::shared_ptr<Surface> surface_conv(
+      const G4VPhysicalVolume& g4PhysVol,
+      const Geant4DetectorElement& detectorelement, const GeometryContext& ctx,
+      bool convertMaterial = false, ActsScalar compressed = 0.);
 };
 
 class HomogeneousSurfaceMaterial;

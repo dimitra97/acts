@@ -16,14 +16,20 @@
 #include "Acts/Geometry/SurfaceArrayCreator.hpp"
 #include "Acts/Geometry/TrackingGeometry.hpp"
 #include "Acts/Geometry/TrackingVolumeArrayCreator.hpp"
+#include "Acts/Utilities/Enumerate.hpp"
+#include "Acts/Visualization/GeometryView3D.hpp"
+#include "Acts/Visualization/IVisualization3D.hpp"
+#include "Acts/Visualization/ObjVisualization3D.hpp"
 #include "ActsExamples/Framework/IContextDecorator.hpp"
 
 #include "G4VPhysicalVolume.hh"
 
-auto ActsExamples::Geant4::Geant4Detector::constructDetector(
-    const ActsExamples::Geant4::Geant4Detector::Config& cfg,
-    const Acts::Logger& logger)
+auto ActsExamples::Geant4::Geant4Detector::constructMsSlice(
+    const ActsExamples::Geant4::Geant4Detector::Config& cfg)
     -> std::tuple<DetectorPtr, ContextDecorators, DetectorElements> {
+  //-> std::tuple<ContextDecorators, DetectorElements> {
+  ACTS_LOCAL_LOGGER(Acts::getDefaultLogger("Geant4Detector", cfg.logLevel));
+
   if (cfg.g4World == nullptr) {
     throw std::invalid_argument(
         "Geant4Detector: no world Geant4 volume provided");
@@ -36,15 +42,26 @@ auto ActsExamples::Geant4::Geant4Detector::constructDetector(
   DetectorPtr detector = nullptr;
   ContextDecorators decorators = {};
 
-  auto [surfaces, elements] = convertGeant4Volumes(cfg, logger);
+  auto [surfaces, elements] = convertGeant4Volumes(cfg);
+  Acts::ObjVisualization3D obj;
+
+  Acts::ViewConfig sConfig = Acts::s_viewSensitive;
+
+  for (auto [is, s] : Acts::enumerate(surfaces)) {
+    Acts::GeometryView3D::drawSurface(obj, *s, Acts::GeometryContext(),
+                                      Acts::Transform3::Identity(), sConfig);
+  }
+  obj.write("ChamberSlice.obj");
 
   return std::tie(detector, decorators, elements);
+  // return std::tie( decorators, elements);
 }
 
 auto ActsExamples::Geant4::Geant4Detector::constructTrackingGeometry(
-    const ActsExamples::Geant4::Geant4Detector::Config& cfg,
-    const Acts::Logger& logger)
+    const ActsExamples::Geant4::Geant4Detector::Config& cfg)
     -> std::tuple<TrackingGeometryPtr, ContextDecorators, DetectorElements> {
+  ACTS_LOCAL_LOGGER(Acts::getDefaultLogger("Geant4Detector", cfg.logLevel));
+
   if (cfg.g4World == nullptr) {
     throw std::invalid_argument(
         "Geant4Detector: no world Geant4 volume provided");
@@ -56,44 +73,48 @@ auto ActsExamples::Geant4::Geant4Detector::constructTrackingGeometry(
 
   ContextDecorators decorators = {};
 
-  auto [surfaces, elements] = convertGeant4Volumes(cfg, logger);
+  auto [surfaces, elements] = convertGeant4Volumes(cfg);
 
   // Surface array creatorr
   auto surfaceArrayCreator = std::make_shared<const Acts::SurfaceArrayCreator>(
-      Acts::SurfaceArrayCreator::Config(), logger.clone("SurfaceArrayCreator"));
+      Acts::SurfaceArrayCreator::Config(),
+      Acts::getDefaultLogger("SurfaceArrayCreator", cfg.logLevel));
   // Layer Creator
   Acts::LayerCreator::Config lcConfig;
   lcConfig.surfaceArrayCreator = surfaceArrayCreator;
   auto layerCreator = std::make_shared<Acts::LayerCreator>(
-      lcConfig, logger.clone("LayerCreator"));
+      lcConfig, Acts::getDefaultLogger("LayerCreator", cfg.logLevel));
   // Layer array creator
   Acts::LayerArrayCreator::Config lacConfig;
   auto layerArrayCreator = std::make_shared<const Acts::LayerArrayCreator>(
-      lacConfig, logger.clone("LayerArrayCreator"));
+      lacConfig, Acts::getDefaultLogger("LayerArrayCreator", cfg.logLevel));
   // Tracking volume array creator
   Acts::TrackingVolumeArrayCreator::Config tvacConfig;
   auto tVolumeArrayCreator =
       std::make_shared<const Acts::TrackingVolumeArrayCreator>(
-          tvacConfig, logger.clone("TrackingVolumeArrayCreator"));
+          tvacConfig,
+          Acts::getDefaultLogger("TrackingVolumeArrayCreator", cfg.logLevel));
   // configure the cylinder volume helper
   Acts::CylinderVolumeHelper::Config cvhConfig;
   cvhConfig.layerArrayCreator = layerArrayCreator;
   cvhConfig.trackingVolumeArrayCreator = tVolumeArrayCreator;
   auto cylinderVolumeHelper =
       std::make_shared<const Acts::CylinderVolumeHelper>(
-          cvhConfig, logger.clone("CylinderVolumeHelper"));
+          cvhConfig,
+          Acts::getDefaultLogger("CylinderVolumeHelper", cfg.logLevel));
 
   // Configure the tracking geometry builder, copy the surfaces in
   Acts::KDTreeTrackingGeometryBuilder::Config kdtCfg;
   kdtCfg.surfaces = surfaces;
   kdtCfg.layerCreator = layerCreator;
   kdtCfg.trackingVolumeHelper = cylinderVolumeHelper;
-  kdtCfg.protoDetector = cfg.protoDetector;
+  // kdtCfg.protoDetector = cfg.protoDetector;
   kdtCfg.geometryIdentifierHook = cfg.geometryIdentifierHook;
 
   // The KDT tracking geometry builder
   auto kdtBuilder = Acts::KDTreeTrackingGeometryBuilder(
-      kdtCfg, logger.clone("KDTreeTrackingGeometryBuilder"));
+      kdtCfg,
+      Acts::getDefaultLogger("KDTreeTrackingGeometryBuilder", cfg.logLevel));
 
   Acts::GeometryContext tContext;
   TrackingGeometryPtr trackingGeometry = kdtBuilder.trackingGeometry(tContext);
@@ -102,9 +123,11 @@ auto ActsExamples::Geant4::Geant4Detector::constructTrackingGeometry(
 }
 
 auto ActsExamples::Geant4::Geant4Detector::convertGeant4Volumes(
-    const Geant4Detector::Config& cfg, const Acts::Logger& logger) const
+    const Geant4Detector::Config& cfg) const
     -> std::tuple<ActsExamples::Geant4::Geant4Detector::Surfaces,
                   ActsExamples::Geant4::Geant4Detector::DetectorElements> {
+  ACTS_LOCAL_LOGGER(Acts::getDefaultLogger("Geant4Detector", cfg.logLevel));
+
   // Generate the surface cache
   Acts::Geant4DetectorSurfaceFactory::Cache g4SurfaceCache;
   G4Transform3D g4ToWorld;

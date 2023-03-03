@@ -10,6 +10,7 @@
 #include "Acts/Propagator/AtlasStepper.hpp"
 #include "Acts/Propagator/EigenStepper.hpp"
 #include "Acts/Propagator/Navigator.hpp"
+#include "Acts/Navigation/NavigationState.hpp"
 #include "Acts/Propagator/Propagator.hpp"
 #include "Acts/Propagator/StraightLineStepper.hpp"
 #include "Acts/Utilities/Logger.hpp"
@@ -68,6 +69,15 @@ void addPropagation(Context& ctx) {
                  }),
                  py::arg("cfg"), py::arg("level") = Logging::INFO);
 
+    auto nav_state =
+      py::class_<Acts::Experimental::NavigationState>(m, "NavigationState")
+      .def(py::init<>());
+
+    auto surf_filler =
+      py::class_<Acts::Experimental::SurfacesFiller>(m, "SurfacesFiller")
+      .def(py::init<>());
+      
+
     auto c = py::class_<Config>(nav, "Config").def(py::init<>());
 
     ACTS_PYTHON_STRUCT_BEGIN(c, Config);
@@ -121,5 +131,7 @@ void addPropagation(Context& ctx) {
     stepper.def(py::init<>());
   }
 }
+
+  
 
 }  // namespace Acts::Python
