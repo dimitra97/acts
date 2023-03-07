@@ -326,13 +326,13 @@ std::shared_ptr<Acts::Surface> Acts::Geant4PhysicalVolumeConverter::surface(
 std::shared_ptr<Acts::Surface>
 Acts::Geant4PhysicalVolumeConverter::surface_conv(
     const G4VPhysicalVolume& g4PhysVol,
-    const Geant4DetectorElement& detectorelement, const GeometryContext& ctx,
+    std::shared_ptr<Geant4DetectorElement>detectorelement, const GeometryContext& ctx,
     bool convertMaterial, ActsScalar compressed) {
   // Get the logical volume
   auto g4LogVol = g4PhysVol.GetLogicalVolume();
   auto g4Solid = g4LogVol->GetSolid();
 
-  auto toGlobal = detectorelement.transform(ctx);
+  auto toGlobal = detectorelement->transform(ctx);
 
   std::cout << "forcedtype is" << forcedType << std::endl;
 

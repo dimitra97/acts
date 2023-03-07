@@ -149,7 +149,7 @@ struct Geant4PhysicalVolumeConverter {
 
   std::shared_ptr<Surface> surface_conv(
       const G4VPhysicalVolume& g4PhysVol,
-      const Geant4DetectorElement& detectorelement, const GeometryContext& ctx,
+      std::shared_ptr<Geant4DetectorElement> detectorelement, const GeometryContext& ctx,
       bool convertMaterial = false, ActsScalar compressed = 0.);
 };
 
