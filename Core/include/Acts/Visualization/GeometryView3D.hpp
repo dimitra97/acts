@@ -114,6 +114,17 @@ struct GeometryView3D {
       const ViewConfig& connected = ViewConfig({0, 255, 0}),
       const ViewConfig& unconnected = ViewConfig({255, 0, 0}));
 
+  //Helper method to draw DetectorVolume with the inner surfaces 
+
+  static void drawDetectorVolumeWithSurfaces(
+      IVisualization3D& helper,
+      const Acts::Experimental::DetectorVolume& volume,
+      const GeometryContext& gctx,
+      const Transform3& transform = Transform3::Identity(),
+      const ViewConfig& connected = ViewConfig({0, 255, 0}),
+      const ViewConfig& unconnected = ViewConfig({255, 0, 0}),
+      const ViewConfig& viewConfig = s_viewSensitive);
+
   /// Helper method to draw AbstractVolume objects
   ///
   /// @param [in,out] helper The visualization helper
