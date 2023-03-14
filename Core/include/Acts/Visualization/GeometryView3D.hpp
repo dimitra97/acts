@@ -114,7 +114,7 @@ struct GeometryView3D {
       const ViewConfig& connected = ViewConfig({0, 255, 0}),
       const ViewConfig& unconnected = ViewConfig({255, 0, 0}));
 
-  //Helper method to draw DetectorVolume with the inner surfaces 
+  // Helper method to draw DetectorVolume with the inner surfaces
 
   static void drawDetectorVolumeWithSurfaces(
       IVisualization3D& helper,
