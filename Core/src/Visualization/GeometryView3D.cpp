@@ -214,30 +214,31 @@ void Acts::GeometryView3D::drawDetectorVolume(
   }
 }
 
-void Acts::GeometryView3D::drawDetectorVolumeWithSurfaces(
-    IVisualization3D& helper, const Acts::Experimental::DetectorVolume& volume,
-    const GeometryContext& gctx, const Transform3& transform,
-    const ViewConfig& connected, const ViewConfig& unconnected,
-    const ViewConfig& viewConfig) {
-  // draw the portals of the detectorvolume
-  auto portals = volume.portals();
-  for (auto portal : portals) {
-    drawPortal(helper, *portal, gctx, transform, connected, unconnected);
-  }
+  void Acts::GeometryView3D::drawDetectorVolumeWithSurfaces(
+      IVisualization3D& helper,const Acts::Experimental::DetectorVolume& volume,
+      const GeometryContext& gctx,const Transform3& transform,
+      const ViewConfig& connected,const ViewConfig& unconnected, const ViewConfig& viewConfig){
 
-  // draw the surfaces of the detector volume in case they are set to the outer
-  // volume
-  auto surfaces = volume.surfaces();
-  for (auto surface : surfaces) {
-    drawSurface(helper, *surface, gctx, transform, viewConfig);
-  }
-  // draw the subvolumes with their surfaces using recursion
-  auto subvolumes = volume.volumes();
-  for (auto subvolume : subvolumes) {
-    drawDetectorVolumeWithSurfaces(helper, *subvolume, gctx, transform,
-                                   connected, unconnected, viewConfig);
-  }
-}
+     
+     //draw the portals of the detectorvolume
+     auto portals = volume.portals();
+     for (auto portal : portals) {
+      drawPortal(helper, *portal, gctx, transform, connected, unconnected);
+     }
+
+     //draw the surfaces of the detector volume in case they are set to the outer volume
+     auto surfaces = volume.surfaces();
+     for(auto surface : surfaces){
+      drawSurface(helper, *surface, gctx, transform, viewConfig);
+     }
+     // draw the subvolumes with their surfaces using recursion
+     auto subvolumes = volume.volumes();
+     for(auto subvolume : subvolumes){
+        drawDetectorVolumeWithSurfaces(helper, *subvolume, gctx, transform, connected,
+                         unconnected, viewConfig);
+    }
+
+ }
 
 void Acts::GeometryView3D::drawLayer(
     IVisualization3D& helper, const Layer& layer, const GeometryContext& gctx,
