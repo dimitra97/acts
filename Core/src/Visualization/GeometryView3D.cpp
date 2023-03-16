@@ -219,7 +219,6 @@ void Acts::GeometryView3D::drawDetectorVolume(
         drawPortal(helper, *sub_portal, gctx, transform, connected,
                    unconnected);
       }
-
       if(drawSurfaces){
         auto sub_surfaces = subvolume->surfaces();
         for(auto sub_surface : sub_surfaces){
