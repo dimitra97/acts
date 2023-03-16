@@ -110,9 +110,11 @@ struct GeometryView3D {
       IVisualization3D& helper,
       const Acts::Experimental::DetectorVolume& volume,
       const GeometryContext& gctx,
+      bool drawSurfaces,
       const Transform3& transform = Transform3::Identity(),
       const ViewConfig& connected = ViewConfig({0, 255, 0}),
-      const ViewConfig& unconnected = ViewConfig({255, 0, 0}));
+      const ViewConfig& unconnected = ViewConfig({255, 0, 0}),
+      const ViewConfig& viewConfig = s_viewSensitive);
 
 
   // Helper method to draw DetectorVolume with the inner surfaces
