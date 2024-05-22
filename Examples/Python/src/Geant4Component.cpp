@@ -363,6 +363,7 @@ PYBIND11_MODULE(ActsPythonBindingsGeant4, mod) {
             .def(py::init<const Config&>())
             .def("buildChamber", &MockupSectorBuilder::buildChamber)
             .def("buildSector", &MockupSectorBuilder::buildSector)
+            .def("buildMuonDetector", &MockupSectorBuilder::buildMuonDetector)
             .def("drawSector", &MockupSectorBuilder::drawSector);
 
     auto c = py::class_<Config>(ms, "Config").def(py::init<>());

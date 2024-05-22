@@ -35,10 +35,15 @@ class MockupSectorBuilder {
     // The path of the gdml file that holds the mockup geometry
     std::string gdmlPath = "";
 
+    //Detector's name
+    std::string detectorName = "MuonDetector";
+
     // The number of sectors we want to create
     int NumberOfSectors = 1;
 
     float toleranceOverlap = 10.;
+
+    bool binning = false;
   };
 
   /// Nested configuration struct for chamber
@@ -73,9 +78,21 @@ class MockupSectorBuilder {
       std::vector<std::shared_ptr<Acts::Experimental::DetectorVolume>>
           detVolumes);
 
+  /// Build MultiLayer
+  /// @param gctx The current geometry context object
+  /// @param gctx The surfaces for the multi layer
+  std::shared_ptr<Acts::Experimental::DetectorVolume> buildMultiLayer(
+      const Acts::GeometryContext& gctx,
+      std::vector<std::shared_ptr<Acts::Surface>> surfaces);
+
+  /// Build detector for the Muon Mockup Spectrometer
+  /// @param rootVolumes The rootvolumes assigned to the detector
+  std::shared_ptr<Acts::Experimental::Detector> buildMuonDetector(
+    std::vector<std::shared_ptr<Acts::Experimental::DetectorVolume>> rootVolumes);
+
   /// Draw the sector in an obj file
   /// @param nameObjFile The name of the obj file where the sector will be saved
-  void drawSector(const std::shared_ptr<Acts::Experimental::DetectorVolume>&
+  static void drawSector(const std::shared_ptr<Acts::Experimental::DetectorVolume>&
                       detectorVolumeSector,
                   const std::string& nameObjFile);
 

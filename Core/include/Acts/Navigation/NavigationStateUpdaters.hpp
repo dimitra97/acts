@@ -53,7 +53,7 @@ inline void updateCandidates(const GeometryContext& gctx,
     for (auto& si : sIntersection.split()) {
       c.objectIntersection = si;
       if (c.objectIntersection &&
-          c.objectIntersection.pathLength() > nState.overstepTolerance) {
+          c.objectIntersection.pathLength() > s_onSurfaceTolerance) {
         nextSurfaceCandidates.emplace_back(c);
       }
     }

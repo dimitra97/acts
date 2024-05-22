@@ -83,8 +83,26 @@ Acts::Result<Acts::Vector2> Acts::LineSurface::globalToLocal(
 
   // Bring the global position into the local frame. First remove the
   // translation then the rotation.
+  std::cout << "global position=" << position.x() << "," << position.y() << ","
+            << position.z() << std::endl;
+  std::cout << "global direction=" << direction.x() << "," << direction.y()
+            << "," << direction.z() << std::endl;
   Vector3 localPosition = referenceFrame(gctx, position, direction).inverse() *
                           (position - transform(gctx).translation());
+
+  auto rot = referenceFrame(gctx, position, direction);
+  Acts::Vector3 rotX(rot.col(0));
+  Acts::Vector3 rotY(rot.col(1));
+  Acts::Vector3 rotZ(rot.col(2));
+  std::cout << "ColX = (" << rotX(0) << ", " << rotX(1) << ", " << rotX(2)
+            << ")" << std::endl;
+  std::cout << "ColY = (" << rotY(0) << ", " << rotY(1) << ", " << rotY(2)
+            << ")" << std::endl;
+  std::cout << "ColZ = (" << rotZ(0) << ", " << rotZ(1) << ", " << rotZ(2)
+            << ")" << std::endl;
+
+  std::cout << "local position=" << localPosition.x() << ","
+            << localPosition.y() << "," << localPosition.z() << std::endl;
 
   // `localPosition.z()` is not the distance to the PCA but the smallest
   // distance between `position` and the imaginary plane surface defined by the
