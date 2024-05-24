@@ -95,6 +95,7 @@ struct Fixture {
         gid(Acts::GeometryIdentifier().setVolume(1).setLayer(2).setSensitive(
             3)),
         pid(ActsFatras::Barcode().setVertexPrimary(12).setParticle(23)),
+
         surface(std::move(surf)) {
     using namespace Acts::UnitLiterals;
     using Acts::VectorHelpers::makeVector4;
@@ -186,6 +187,9 @@ BOOST_AUTO_TEST_CASE(BoundAll) {
   // smearing does not do anything
   {
     s.smearFunctions.fill(SterileSmearer{});
+    std::cout << f.hit.fourPosition().x() << std::endl;
+    std::cout << f.hit.fourPosition().y() << std::endl;
+    std::cout << f.hit.fourPosition().z() << std::endl;
     auto ret = s(f.rng, f.hit, *f.surface, f.geoCtx);
     BOOST_CHECK(ret.ok());
     auto [par, cov] = ret.value();
@@ -317,6 +321,7 @@ BOOST_AUTO_TEST_CASE(GaussianSmearing) {
         }
       ]
 })");
+
   double radius = 5.;
   double halfZ = 8.;
   Fixture<ActsExamples::RandomEngine> f(
@@ -328,10 +333,17 @@ BOOST_AUTO_TEST_CASE(GaussianSmearing) {
   auto digiConfig =
       ActsExamples::DigiConfigConverter("digitization-configuration")
           .fromJson(djson);
+
+  // ActsExamples::SmearingConfig sCfg;
+  // ActsExamples::from_json(djson,sCfg);
+
   ActsFatras::BoundParametersSmearer<ActsExamples::RandomEngine, 1u> s;
-  
+
   for (auto& el : digiConfig) {
     for (auto& smearing : el.smearingDigiConfig) {
+      // check if the forcePositiveValues is successfully parsed
+      BOOST_CHECK(smearing.forcePositiveValues);
+
       std::fill(std::begin(s.indices), std::end(s.indices),
                 static_cast<Acts::BoundIndices>(smearing.index));
       std::fill(std::begin(s.smearFunctions), std::end(s.smearFunctions),
