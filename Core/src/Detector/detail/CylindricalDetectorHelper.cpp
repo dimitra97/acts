@@ -380,7 +380,7 @@ Acts::Experimental::detail::CylindricalDetectorHelper::connectInR(
         std::find(selectedOnly.begin(), selectedOnly.end(), iu) !=
             selectedOnly.end()) {
       const Surface& refSurface = volumes[0u]->portals()[iu]->surface();
-      const Transform3& refTransform = refSurface.transform(gctx);
+      Transform3 refTransform = refSurface.transform(gctx);
       pReplacements.push_back(createDiscReplacement(
           refTransform, rBoundaries, {avgPhi - phiSector, avgPhi + phiSector},
           iu, idir));

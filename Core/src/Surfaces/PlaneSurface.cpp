@@ -37,6 +37,12 @@ Acts::PlaneSurface::PlaneSurface(const GeometryContext& gctx,
       RegularSurface(gctx, other, transform),
       m_bounds(other.m_bounds) {}
 
+Acts::PlaneSurface::PlaneSurface(const Vector3& center, const Vector3& normal)
+    : RegularSurface(), m_bounds(nullptr) {
+  m_transform = 
+      CurvilinearSurface(center, normal).transform();
+}
+
 Acts::PlaneSurface::PlaneSurface(std::shared_ptr<const PlanarBounds> pbounds,
                                  const Acts::DetectorElementBase& detelement)
     : RegularSurface(detelement), m_bounds(std::move(pbounds)) {
@@ -141,7 +147,9 @@ Acts::Vector3 Acts::PlaneSurface::normal(const GeometryContext& gctx,
 
 Acts::Vector3 Acts::PlaneSurface::normal(const GeometryContext& gctx,
                                          const Vector3& /*pos*/) const {
-  return normal(gctx);
+  // fast access via transform matrix (and not rotation())
+  const auto tMatrix = transform(gctx).matrix();
+  return Vector3(tMatrix(0, 2), tMatrix(1, 2), tMatrix(2, 2));
 }
 
 Acts::Vector3 Acts::PlaneSurface::normal(const GeometryContext& gctx) const {

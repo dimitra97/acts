@@ -67,6 +67,12 @@ endif()
 if(PluginTGeo IN_LIST Acts_COMPONENTS)
   find_dependency(ROOT @ROOT_VERSION@ CONFIG EXACT)
 endif()
+<<<<<<< Updated upstream
+=======
+if(PluginGeoModel IN_LIST Acts_COMPONENTS)
+  find_dependency(GeoModelIO @GeoModelIO_VERSION@ CONFIG EXACT)
+endif()
+>>>>>>> Stashed changes
 if(PluginActSVG IN_LIST Acts_COMPONENTS)
   find_dependency(actsvg @actsvg_VERSION@ CONFIG EXACT)
 endif()
