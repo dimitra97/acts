@@ -1,25 +1,21 @@
 include(FetchContent)
 
 add_library(
-    ActsPluginGeoModel
-    SHARED
-    src/GeoModelBlueprintCreater.cpp
-    src/GeoModelConversionError.cpp
-    src/GeoModelToDetectorVolume.cpp
-    src/GeoModelReader.cpp
-    src/GeoModelDetectorElement.cpp
-    src/GeoModelDetectorObjectFactory.cpp
-    src/GeoModelMaterialConverter.cpp
-    src/detail/GeoBoxConverter.cpp
-    src/detail/GeoTrdConverter.cpp
-    src/detail/GeoTubeConverter.cpp
-    src/detail/GeoPolygonConverter.cpp
-    src/detail/GeoShiftConverter.cpp
-    src/detail/GeoIntersectionAnnulusConverter.cpp
-    src/detail/GeoModelBinningHelper.cpp
-    src/detail/GeoModelExtentHelper.cpp
-    src/detail/GeoUnionDoubleTrdConverter.cpp
-)
+  ActsPluginGeoModel SHARED
+  src/GeoModelBlueprintCreater.cpp
+  src/GeoModelConversionError.cpp
+  src/GeoModelReader.cpp
+  src/GeoModelDetectorElement.cpp
+  src/GeoModelDetectorSurfaceFactory.cpp
+  src/GeoModelMaterialConverter.cpp
+  src/detail/GeoBoxConverter.cpp
+  src/detail/GeoTrdConverter.cpp
+  src/detail/GeoTubeConverter.cpp
+  src/detail//GeoShiftConverter.cpp
+  src/detail//GeoIntersectionAnnulusConverter.cpp
+  src/detail/GeoModelBinningHelper.cpp
+  src/detail/GeoModelExtentHelper.cpp
+  src/detail/GeoUnionDoubleTrdConverter.cpp)
 target_include_directories(
     ActsPluginGeoModel
     PUBLIC
@@ -36,8 +32,10 @@ target_link_libraries(
 )
 
 install(
-    TARGETS ActsPluginGeoModel
-    EXPORT ActsPluginGeoModelTargets
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
-install(DIRECTORY include/Acts DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+  TARGETS ActsPluginGeoModel
+  EXPORT ActsPluginGeoModelTargets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(
+  DIRECTORY include/Acts
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+

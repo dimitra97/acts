@@ -22,7 +22,7 @@ std::array<std::string, Acts::Surface::SurfaceType::Other>
         "Cone", "Cylinder", "Disc", "Perigee", "Plane", "Straw", "Curvilinear"};
 
 Acts::Surface::Surface(const Transform3& transform)
-    : GeometryObject(), m_transform(std::make_unique<Transform3>(transform)) {}
+    : GeometryObject(), m_transform(transform) {}
 
 Acts::Surface::Surface(const DetectorElementBase& detelement)
     : GeometryObject(), m_associatedDetElement(&detelement) {}
@@ -30,17 +30,15 @@ Acts::Surface::Surface(const DetectorElementBase& detelement)
 Acts::Surface::Surface(const Surface& other)
     : GeometryObject(other),
       std::enable_shared_from_this<Surface>(),
+      m_transform(other.m_transform),
       m_associatedDetElement(other.m_associatedDetElement),
       m_surfaceMaterial(other.m_surfaceMaterial) {
-  if (other.m_transform) {
-    m_transform = std::make_unique<Transform3>(*other.m_transform);
-  }
 }
 
 Acts::Surface::Surface(const GeometryContext& gctx, const Surface& other,
                        const Transform3& shift)
     : GeometryObject(),
-      m_transform(std::make_unique<Transform3>(shift * other.transform(gctx))),
+      m_transform(shift * other.transform(gctx)),
       m_surfaceMaterial(other.m_surfaceMaterial) {}
 
 Acts::Surface::~Surface() = default;
@@ -90,7 +88,7 @@ Acts::Surface::alignmentToBoundDerivativeWithoutCorrection(
   // The vector between position and center
   const auto pcRowVec = (position - center(gctx)).transpose().eval();
   // The local frame rotation
-  const auto& rotation = transform(gctx).rotation();
+  const auto rotation = transform(gctx).rotation();
   // The axes of local frame
   const auto& localXAxis = rotation.col(0);
   const auto& localYAxis = rotation.col(1);
@@ -130,7 +128,7 @@ Acts::AlignmentToPathMatrix Acts::Surface::alignmentToPathDerivative(
   // The vector between position and center
   const auto pcRowVec = (position - center(gctx)).transpose().eval();
   // The local frame rotation
-  const auto& rotation = transform(gctx).rotation();
+  const auto rotation = transform(gctx).rotation();
   // The local frame z axis
   const auto& localZAxis = rotation.col(2);
   // Cosine of angle between momentum direction and local frame z axis
@@ -160,11 +158,8 @@ Acts::Surface& Acts::Surface::operator=(const Surface& other) {
   if (&other != this) {
     GeometryObject::operator=(other);
     // detector element, identifier & layer association are unique
-    if (other.m_transform) {
-      m_transform = std::make_unique<Transform3>(*other.m_transform);
-    } else {
-      m_transform.reset();
-    }
+    // 
+    m_transform = other.m_transform;
     m_associatedLayer = other.m_associatedLayer;
     m_surfaceMaterial = other.m_surfaceMaterial;
     m_associatedDetElement = other.m_associatedDetElement;
@@ -190,8 +185,7 @@ bool Acts::Surface::operator==(const Surface& other) const {
     return false;
   }
   // (e) compare transform values
-  if (m_transform && other.m_transform &&
-      !m_transform->isApprox((*other.m_transform), 1e-9)) {
+  if (!m_transform.isApprox((other.m_transform), 1e-9)) {
     return false;
   }
   // (f) compare material
@@ -244,12 +238,12 @@ Acts::Vector3 Acts::Surface::center(const GeometryContext& gctx) const {
   return Vector3(tMatrix(0, 3), tMatrix(1, 3), tMatrix(2, 3));
 }
 
-const Acts::Transform3& Acts::Surface::transform(
+Acts::Transform3 Acts::Surface::transform(
     const GeometryContext& gctx) const {
   if (m_associatedDetElement != nullptr) {
     return m_associatedDetElement->transform(gctx);
   }
-  return *m_transform;
+  return m_transform;
 }
 
 bool Acts::Surface::insideBounds(
@@ -347,7 +341,7 @@ void Acts::Surface::assignDetectorElement(
   m_associatedDetElement = &detelement;
   // resetting the transform as it will be handled through the detector element
   // now
-  m_transform.reset();
+  m_transform = Transform3::Identity();
 }
 
 void Acts::Surface::assignSurfaceMaterial(

@@ -181,7 +181,7 @@ class Surface : public virtual GeometryObject,
   /// @param gctx The current geometry context object, e.g. alignment
   ///
   /// @return the contextual transform
-  virtual const Transform3& transform(const GeometryContext& gctx) const;
+  virtual Transform3 transform(const GeometryContext& gctx) const;
 
   /// Return method for the surface center by reference
   /// @note the center is always recalculated in order to not keep a cache
@@ -494,7 +494,7 @@ class Surface : public virtual GeometryObject,
 
   /// Transform3 definition that positions
   /// (translation, rotation) the surface in global space
-  std::unique_ptr<const Transform3> m_transform{};
+  Transform3 m_transform;
 
   /// Pointer to the a DetectorElementBase
   const DetectorElementBase* m_associatedDetElement{nullptr};
