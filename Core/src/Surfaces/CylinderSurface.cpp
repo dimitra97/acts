@@ -45,12 +45,12 @@ Acts::CylinderSurface::CylinderSurface(const CylinderSurface& other)
 
 Acts::CylinderSurface::CylinderSurface(const GeometryContext& gctx,
                                        const CylinderSurface& other,
-                                       const Transform3& shift)
+                                       const Transform3 shift)
     : GeometryObject(),
       RegularSurface(gctx, other, shift),
       m_bounds(other.m_bounds) {}
 
-Acts::CylinderSurface::CylinderSurface(const Transform3& transform,
+Acts::CylinderSurface::CylinderSurface(const Transform3 transform,
                                        double radius, double halfz,
                                        double halfphi, double avphi,
                                        double bevelMinZ, double bevelMaxZ)
@@ -67,7 +67,7 @@ Acts::CylinderSurface::CylinderSurface(
 }
 
 Acts::CylinderSurface::CylinderSurface(
-    const Transform3& transform, std::shared_ptr<const CylinderBounds> cbounds)
+    const Transform3 transform, std::shared_ptr<const CylinderBounds> cbounds)
     : RegularSurface(transform), m_bounds(std::move(cbounds)) {
   throw_assert(m_bounds, "CylinderBounds must not be nullptr");
 }
@@ -210,7 +210,7 @@ Acts::Vector3 Acts::CylinderSurface::rotSymmetryAxis(
 }
 
 Acts::detail::RealQuadraticEquation Acts::CylinderSurface::intersectionSolver(
-    const Transform3& transform, const Vector3& position,
+    const Transform3 transform, const Vector3& position,
     const Vector3& direction) const {
   // Solve for radius R
   double R = bounds().get(CylinderBounds::eR);
@@ -386,7 +386,7 @@ Acts::CylinderSurface::mergedWith(const CylinderSurface& other,
 
   assert(m_transform != nullptr && other.m_transform != nullptr);
 
-  Transform3 otherLocal = m_transform->inverse() * *other.m_transform;
+  Transform3 otherLocal = m_transform.inverse() * other.m_transform;
 
   constexpr auto tolerance = s_onSurfaceTolerance;
 
@@ -505,7 +505,7 @@ Acts::CylinderSurface::mergedWith(const CylinderSurface& other,
     auto newBounds = std::make_shared<CylinderBounds>(r, newHlZ, hlPhi, avgPhi);
 
     Transform3 newTransform =
-        *m_transform * Translation3{Vector3::UnitZ() * newMidZ};
+        m_transform * Translation3{Vector3::UnitZ() * newMidZ};
 
     return {Surface::makeShared<CylinderSurface>(newTransform, newBounds),
             zShift < 0};
@@ -549,7 +549,7 @@ Acts::CylinderSurface::mergedWith(const CylinderSurface& other,
       auto [newHlPhi, newAvgPhi, reversed] = detail::mergedPhiSector(
           hlPhi, avgPhi, otherHlPhi, otherAvgPhi, logger, tolerance);
 
-      Transform3 newTransform = *m_transform;
+      Transform3 newTransform = m_transform;
 
       if (externalRotation) {
         ACTS_VERBOSE("Modifying transform for external rotation of "

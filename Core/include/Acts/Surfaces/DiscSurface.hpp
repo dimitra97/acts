@@ -63,7 +63,7 @@ class DiscSurface : public RegularSurface {
   /// @param rmax The outer radius of the disc surface
   /// @param hphisec The opening angle of the disc surface and is optional
   ///        the default is a full disc
-  DiscSurface(const Transform3& transform, double rmin, double rmax,
+  DiscSurface(const Transform3 transform, double rmin, double rmax,
               double hphisec = M_PI);
 
   /// Constructor for Discs from Transform3, \f$ r_{min}, r_{max}, hx_{min},
@@ -77,14 +77,14 @@ class DiscSurface : public RegularSurface {
   /// @param maxR The inner radius of the disc surface
   /// @param avephi The position in phi (default is 0.)
   /// @param stereo The optional stereo angle
-  DiscSurface(const Transform3& transform, double minhalfx, double maxhalfx,
+  DiscSurface(const Transform3 transform, double minhalfx, double maxhalfx,
               double minR, double maxR, double avephi = 0., double stereo = 0.);
 
   /// Constructor for Discs from Transform3 and shared DiscBounds
   ///
   /// @param transform The transform that positions the disc in global 3D
   /// @param dbounds The disc bounds describing the surface coverage
-  DiscSurface(const Transform3& transform,
+  DiscSurface(const Transform3 transform,
               std::shared_ptr<const DiscBounds> dbounds = nullptr);
 
   /// Constructor from DetectorElementBase : Element proxy
@@ -105,7 +105,7 @@ class DiscSurface : public RegularSurface {
   /// @param other is the source cone surface
   /// @param shift is the additional transform applied after copying
   DiscSurface(const GeometryContext& gctx, const DiscSurface& other,
-              const Transform3& shift);
+              const Transform3 shift);
 
  public:
   ~DiscSurface() override = default;

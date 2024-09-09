@@ -56,7 +56,7 @@ class PlaneSurface : public RegularSurface {
   /// @param other is the source cone surface
   /// @param transform is the additional transform applied after copying
   PlaneSurface(const GeometryContext& gctx, const PlaneSurface& other,
-               const Transform3& transform);
+               const Transform3 transform);
 
   /// Constructor from DetectorElementBase : Element proxy
   ///
@@ -69,7 +69,7 @@ class PlaneSurface : public RegularSurface {
   ///
   /// @param transform transform in 3D that positions this surface
   /// @param pbounds bounds object to describe the actual surface area
-  PlaneSurface(const Transform3& transform,
+  PlaneSurface(const Transform3 transform,
                std::shared_ptr<const PlanarBounds> pbounds = nullptr);
 
  public:

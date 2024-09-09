@@ -56,7 +56,7 @@ class CylinderSurface : public RegularSurface {
   /// @param avphi The phi value from which the opening angle spans (both sides)
   /// @param bevelMinZ (optional) The bevel on the negative z side
   /// @param bevelMaxZ (optional) The bevel on the positive z sid The bevel on the positive z side
-  CylinderSurface(const Transform3& transform, double radius, double halfz,
+  CylinderSurface(const Transform3 transform, double radius, double halfz,
                   double halfphi = M_PI, double avphi = 0.,
                   double bevelMinZ = 0., double bevelMaxZ = 0.);
 
@@ -65,7 +65,7 @@ class CylinderSurface : public RegularSurface {
   /// @param transform The transform to position the surface
   /// @param cbounds is a shared pointer to a cylindeer bounds object,
   /// it must exist (assert test)
-  CylinderSurface(const Transform3& transform,
+  CylinderSurface(const Transform3 transform,
                   std::shared_ptr<const CylinderBounds> cbounds);
 
   /// Constructor from DetectorElementBase: Element proxy
@@ -86,7 +86,7 @@ class CylinderSurface : public RegularSurface {
   /// @param other is the source cone surface
   /// @param shift is the additional transform applied after copying
   CylinderSurface(const GeometryContext& gctx, const CylinderSurface& other,
-                  const Transform3& shift);
+                  const Transform3 shift);
 
  public:
   ~CylinderSurface() override = default;
@@ -301,7 +301,7 @@ class CylinderSurface : public RegularSurface {
   ///
   /// @return the quadratic equation
   detail::RealQuadraticEquation intersectionSolver(
-      const Transform3& transform, const Vector3& position,
+      const Transform3 transform, const Vector3& position,
       const Vector3& direction) const;
 };
 

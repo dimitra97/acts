@@ -40,18 +40,18 @@ Acts::DiscSurface::DiscSurface(const DiscSurface& other)
 
 Acts::DiscSurface::DiscSurface(const GeometryContext& gctx,
                                const DiscSurface& other,
-                               const Transform3& shift)
+                               const Transform3 shift)
     : GeometryObject(),
       RegularSurface(gctx, other, shift),
       m_bounds(other.m_bounds) {}
 
-Acts::DiscSurface::DiscSurface(const Transform3& transform, double rmin,
+Acts::DiscSurface::DiscSurface(const Transform3 transform, double rmin,
                                double rmax, double hphisec)
     : GeometryObject(),
       RegularSurface(transform),
       m_bounds(std::make_shared<const RadialBounds>(rmin, rmax, hphisec)) {}
 
-Acts::DiscSurface::DiscSurface(const Transform3& transform, double minhalfx,
+Acts::DiscSurface::DiscSurface(const Transform3 transform, double minhalfx,
                                double maxhalfx, double minR, double maxR,
                                double avephi, double stereo)
     : GeometryObject(),
@@ -59,7 +59,7 @@ Acts::DiscSurface::DiscSurface(const Transform3& transform, double minhalfx,
       m_bounds(std::make_shared<const DiscTrapezoidBounds>(
           minhalfx, maxhalfx, minR, maxR, avephi, stereo)) {}
 
-Acts::DiscSurface::DiscSurface(const Transform3& transform,
+Acts::DiscSurface::DiscSurface(const Transform3 transform,
                                std::shared_ptr<const DiscBounds> dbounds)
     : GeometryObject(),
       RegularSurface(transform),
@@ -395,7 +395,7 @@ Acts::DiscSurface::mergedWith(const DiscSurface& other, BinningValue direction,
   }
   assert(m_transform != nullptr && other.m_transform != nullptr);
 
-  Transform3 otherLocal = m_transform->inverse() * *other.m_transform;
+  Transform3 otherLocal = m_transform.inverse() * other.m_transform;
 
   constexpr auto tolerance = s_onSurfaceTolerance;
 
@@ -494,7 +494,7 @@ Acts::DiscSurface::mergedWith(const DiscSurface& other, BinningValue direction,
     auto newBounds =
         std::make_shared<RadialBounds>(newMinR, newMaxR, hlPhi, avgPhi);
 
-    return {Surface::makeShared<DiscSurface>(*m_transform, newBounds),
+    return {Surface::makeShared<DiscSurface>(m_transform, newBounds),
             minR > otherMinR};
 
   } else if (direction == Acts::BinningValue::binPhi) {
@@ -527,7 +527,7 @@ Acts::DiscSurface::mergedWith(const DiscSurface& other, BinningValue direction,
       auto [newHlPhi, newAvgPhi, reversed] = detail::mergedPhiSector(
           hlPhi, avgPhi, otherHlPhi, otherAvgPhi, logger, tolerance);
 
-      Transform3 newTransform = *m_transform;
+      Transform3 newTransform = m_transform;
 
       if (externalRotation) {
         ACTS_VERBOSE("Modifying transform for external rotation of "

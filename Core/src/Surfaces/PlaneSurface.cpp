@@ -32,16 +32,10 @@ Acts::PlaneSurface::PlaneSurface(const PlaneSurface& other)
 
 Acts::PlaneSurface::PlaneSurface(const GeometryContext& gctx,
                                  const PlaneSurface& other,
-                                 const Transform3& transform)
+                                 const Transform3 transform)
     : GeometryObject(),
       RegularSurface(gctx, other, transform),
       m_bounds(other.m_bounds) {}
-
-Acts::PlaneSurface::PlaneSurface(const Vector3& center, const Vector3& normal)
-    : RegularSurface(), m_bounds(nullptr) {
-  m_transform = 
-      CurvilinearSurface(center, normal).transform();
-}
 
 Acts::PlaneSurface::PlaneSurface(std::shared_ptr<const PlanarBounds> pbounds,
                                  const Acts::DetectorElementBase& detelement)
@@ -50,7 +44,7 @@ Acts::PlaneSurface::PlaneSurface(std::shared_ptr<const PlanarBounds> pbounds,
   throw_assert(m_bounds, "PlaneBounds must not be nullptr");
 }
 
-Acts::PlaneSurface::PlaneSurface(const Transform3& transform,
+Acts::PlaneSurface::PlaneSurface(const Transform3 transform,
                                  std::shared_ptr<const PlanarBounds> pbounds)
     : RegularSurface(transform), m_bounds(std::move(pbounds)) {}
 
