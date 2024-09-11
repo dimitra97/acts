@@ -20,7 +20,7 @@ Acts::GeoModelDetectorElement::GeoModelDetectorElement(
       m_surfaceTransform(sfTransform),
       m_thickness(thickness) {}
 
-const Acts::Transform3& Acts::GeoModelDetectorElement::transform(
+Acts::Transform3 Acts::GeoModelDetectorElement::transform(
     const GeometryContext& /*gctx*/) const {
   return m_surfaceTransform;
 }

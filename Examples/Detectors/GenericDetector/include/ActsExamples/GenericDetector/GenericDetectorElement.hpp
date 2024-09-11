@@ -72,7 +72,7 @@ class GenericDetectorElement : public Acts::DetectorElementBase {
   ///
   /// @note this is called from the surface().transform(gctx) in the PROXY
   /// mode
-  const Acts::Transform3& transform(
+  Acts::Transform3 transform(
       const Acts::GeometryContext& gctx) const override;
 
   /// Return surface associated with this detector element
@@ -101,7 +101,7 @@ class GenericDetectorElement : public Acts::DetectorElementBase {
   std::shared_ptr<const Acts::DiscBounds> m_elementDiscBounds = nullptr;
 };
 
-inline const Acts::Transform3&
+inline Acts::Transform3
 ActsExamples::Generic::GenericDetectorElement::transform(
     const Acts::GeometryContext& /*gctx*/) const {
   return *m_elementTransform;

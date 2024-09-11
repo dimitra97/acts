@@ -77,7 +77,7 @@ class AlignableDetectorElement : public DetectorElementBase {
   /// @param gctx The current geometry context object, e.g. alignment
   ///
   /// @note this is called from the surface().transform() in the PROXY mode
-  const Transform3& transform(const GeometryContext& gctx) const override;
+  Transform3 transform(const GeometryContext& gctx) const override;
 
   /// Return surface associated with this detector element
   const Surface& surface() const override;
@@ -97,7 +97,7 @@ class AlignableDetectorElement : public DetectorElementBase {
   double m_elementThickness{0.};
 };
 
-inline const Transform3& AlignableDetectorElement::transform(
+inline Transform3 AlignableDetectorElement::transform(
     const GeometryContext& gctx) const {
   auto alignContext = gctx.get<AlignmentContext>();
   if (alignContext.alignmentStore != nullptr &&

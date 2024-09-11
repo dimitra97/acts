@@ -20,7 +20,7 @@ Acts::Geant4DetectorElement::Geant4DetectorElement(
       m_toGlobal(toGlobal),
       m_thickness(thickness) {}
 
-const Acts::Transform3& Acts::Geant4DetectorElement::transform(
+Acts::Transform3 Acts::Geant4DetectorElement::transform(
     const GeometryContext& /*gctx*/) const {
   return m_toGlobal;
 }

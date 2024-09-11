@@ -57,11 +57,11 @@ class ExternallyAlignedDetectorElement
   /// @param gctx The current geometry context object, e.g. alignment
   ///
   /// @note this is called from the surface().transform(gctx)
-  const Acts::Transform3& transform(
+  Acts::Transform3 transform(
       const Acts::GeometryContext& gctx) const override;
 };
 
-inline const Acts::Transform3& ExternallyAlignedDetectorElement::transform(
+inline Acts::Transform3 ExternallyAlignedDetectorElement::transform(
     const Acts::GeometryContext& gctx) const {
   if (!gctx.hasValue()) {  // Treating empty context => nominal alignment
     return GenericDetectorElement::transform(gctx);

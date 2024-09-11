@@ -117,7 +117,7 @@ class TGeoDetectorElement : public Acts::DetectorElementBase {
   /// Return local to global transform associated with this identifier
   ///
   /// @param gctx The current geometry context object, e.g. alignment
-  const Transform3& transform(const GeometryContext& gctx) const override;
+  Transform3 transform(const GeometryContext& gctx) const override;
 
   /// Return surface associated with this detector element
   const Surface& surface() const override;
@@ -152,7 +152,7 @@ inline TGeoDetectorElement::Identifier TGeoDetectorElement::identifier() const {
   return m_identifier;
 }
 
-inline const Transform3& TGeoDetectorElement::transform(
+inline Transform3 TGeoDetectorElement::transform(
     const GeometryContext& /*gctx*/) const {
   return m_transform;
 }

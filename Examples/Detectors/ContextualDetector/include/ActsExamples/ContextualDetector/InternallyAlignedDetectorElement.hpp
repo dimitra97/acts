@@ -50,13 +50,13 @@ class InternallyAlignedDetectorElement
   /// @param gctx The current geometry context object, e.g. alignment
   ///
   /// @note this is called from the surface().transform(gctx)
-  const Acts::Transform3& transform(
+  Acts::Transform3 transform(
       const Acts::GeometryContext& gctx) const override;
 
   /// Return the nominal local to global transform
   ///
   /// @note the geometry context will hereby be ignored
-  const Acts::Transform3& nominalTransform(
+  Acts::Transform3 nominalTransform(
       const Acts::GeometryContext& gctx) const;
 
   /// Return local to global transform associated with this identifier
@@ -73,7 +73,7 @@ class InternallyAlignedDetectorElement
   mutable std::mutex m_alignmentMutex;
 };
 
-inline const Acts::Transform3& InternallyAlignedDetectorElement::transform(
+inline Acts::Transform3 InternallyAlignedDetectorElement::transform(
     const Acts::GeometryContext& gctx) const {
   if (!gctx.hasValue()) {
     // Return the standard transform if geo context is empty
@@ -96,7 +96,7 @@ inline const Acts::Transform3& InternallyAlignedDetectorElement::transform(
   return aTransform->second;
 }
 
-inline const Acts::Transform3&
+inline Acts::Transform3
 InternallyAlignedDetectorElement::nominalTransform(
     const Acts::GeometryContext& gctx) const {
   return GenericDetectorElement::transform(gctx);

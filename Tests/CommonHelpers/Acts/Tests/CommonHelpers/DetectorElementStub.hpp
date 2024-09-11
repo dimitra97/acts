@@ -101,7 +101,7 @@ class DetectorElementStub : public DetectorElementBase {
   /// @param gctx The current geometry context object, e.g. alignment
   ///
   /// @note this is called from the surface().transform() in the PROXY mode
-  const Transform3& transform(const GeometryContext& gctx) const override;
+  Transform3 transform(const GeometryContext& gctx) const override;
 
   /// Return surface associated with this detector element
   const Surface& surface() const override;
@@ -121,7 +121,7 @@ class DetectorElementStub : public DetectorElementBase {
   double m_elementThickness{0.};
 };
 
-inline const Transform3& DetectorElementStub::transform(
+inline Transform3 DetectorElementStub::transform(
     const GeometryContext& /*gctx*/) const {
   return m_elementTransform;
 }

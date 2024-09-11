@@ -80,7 +80,7 @@ class TelescopeDetectorElement : public Acts::DetectorElementBase {
   /// @param gctx The current geometry context object, e.g. alignment
   ///
   /// @note this is called from the surface().transform() in the PROXY mode
-  const Acts::Transform3& transform(
+  Acts::Transform3 transform(
       const Acts::GeometryContext& gctx) const final;
 
   /// Return the nominal local to global transform
@@ -127,7 +127,7 @@ inline double TelescopeDetectorElement::thickness() const {
   return m_elementThickness;
 }
 
-inline const Acts::Transform3& TelescopeDetectorElement::transform(
+inline Acts::Transform3 TelescopeDetectorElement::transform(
     const Acts::GeometryContext& gctx) const {
   // Check if a different transform than the nominal exists
   if (!m_alignedTransforms.empty()) {
