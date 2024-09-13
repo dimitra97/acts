@@ -171,6 +171,7 @@ void addFramework(Context& ctx) {
           .def("addReader", &Sequencer::addReader)
           .def("addWriter", &Sequencer::addWriter)
           .def("addWhiteboardAlias", &Sequencer::addWhiteboardAlias)
+          .def("getTimePerEvent", &Sequencer::getTimePerEvent)
           .def_property_readonly("config", &Sequencer::config)
           .def_property_readonly("fpeResult", &Sequencer::fpeResult)
           .def_property_readonly_static(
