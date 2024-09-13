@@ -33,7 +33,7 @@ detector, trackingGeometry, decorators = acts.examples.itk.buildITkGeometry(geo_
 field = acts.examples.MagneticFieldMapXyz(str(geo_dir / "bfield/ATLAS-BField-xyz.root"))
 rnd = acts.examples.RandomNumbers(seed=42)
 
-s = acts.examples.Sequencer(events=100, numThreads=-1, outputDir=str(outputDir))
+s = acts.examples.Sequencer(events=500, numThreads=1, outputDir=str(outputDir))
 
 if not ttbar_pu200:
     addParticleGun(
@@ -53,7 +53,7 @@ else:
             mean=acts.Vector4(0, 0, 0, 0),
         ),
         rnd=rnd,
-        outputDirRoot=outputDir,
+        outputDirRoot=None,
     )
 
 addFatras(
@@ -72,7 +72,7 @@ addFatras(
         if ttbar_pu200
         else ParticleSelectorConfig()
     ),
-    outputDirRoot=outputDir,
+    outputDirRoot=None,
 )
 
 addDigitization(
@@ -80,7 +80,7 @@ addDigitization(
     trackingGeometry,
     field,
     digiConfigFile=geo_dir / "itk-hgtd/itk-smearing-config.json",
-    outputDirRoot=outputDir,
+    outputDirRoot=None,
     rnd=rnd,
 )
 
@@ -108,7 +108,7 @@ addSeeding(
     initialSigmaPtRel=0.1,
     initialVarInflation=[1.0] * 6,
     geoSelectionConfigFile=geo_dir / "itk-hgtd/geoSelection-ITk.json",
-    outputDirRoot=outputDir,
+    outputDirRoot=None,
 )
 
 addCKFTracks(
@@ -131,7 +131,7 @@ addCKFTracks(
         maxPixelHoles=1,
         maxStripHoles=2,
     ),
-    outputDirRoot=outputDir,
+    outputDirRoot=None,
 )
 
 addAmbiguityResolution(
@@ -141,14 +141,14 @@ addAmbiguityResolution(
         maximumIterations=10000,
         nMeasurementsMin=6,
     ),
-    outputDirRoot=outputDir,
+    outputDirRoot=None,
 )
 
 addVertexFitting(
     s,
     field,
     vertexFinder=VertexFinder.AMVF,
-    outputDirRoot=outputDir,
+    outputDirRoot=None,
 )
 
 \
