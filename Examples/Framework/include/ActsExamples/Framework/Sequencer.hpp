@@ -156,6 +156,8 @@ class Sequencer {
   /// Get const access to the config
   const Config &config() const { return m_cfg; }
 
+  float getTimePerEvent(){ return m_eventDuration; }
+
  private:
   /// List of all configured algorithm names.
   std::vector<std::string> listAlgorithmNames() const;
@@ -186,6 +188,8 @@ class Sequencer {
   std::unordered_map<std::string, const DataHandleBase *> m_whiteBoardState;
 
   std::atomic<std::size_t> m_nUnmaskedFpe = 0;
+
+  float m_eventDuration; 
 
   const Acts::Logger &logger() const { return *m_logger; }
 };

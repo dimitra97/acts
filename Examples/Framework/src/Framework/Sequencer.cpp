@@ -386,6 +386,7 @@ inline std::string asString(D duration) {
 // Convert duration scaled to one event to a printable string.
 template <typename D>
 inline std::string perEvent(D duration, std::size_t numEvents) {
+  
   return asString(duration / numEvents) + "/event";
 }
 
@@ -581,6 +582,8 @@ int Sequencer::run() {
   ACTS_INFO("Processed " << numEvents << " events in " << asString(totalWall)
                          << " (wall clock)");
   ACTS_INFO("Average time per event: " << perEvent(totalReal, numEvents));
+  auto durationSeconds = std::chrono::duration_cast<Seconds>(totalReal).count();
+  m_eventDuration = durationSeconds/numEvents;
   ACTS_DEBUG("Average time per algorithm:");
   for (std::size_t i = 0; i < names.size(); ++i) {
     ACTS_DEBUG("  " << names[i] << ": "
