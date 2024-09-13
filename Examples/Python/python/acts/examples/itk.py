@@ -28,7 +28,7 @@ def buildITkGeometry(
     geo_dir: Path,
     customMaterialFile: Optional[str] = None,
     material: bool = True,
-    jsonconfig: bool = True,
+    jsonconfig: bool = False,
     logLevel=acts.logging.WARNING,
 ):
     customLogLevel = acts.examples.defaultLogging(logLevel=logLevel)

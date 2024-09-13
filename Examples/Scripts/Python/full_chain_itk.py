@@ -154,7 +154,7 @@ addVertexFitting(
 \
 f = open("TimeEventDist_CopyTransform.txt", "w")
 
-for i in range(100):
+for i in range(200):
     s.run()
     f.write(str(s.getTimePerEvent()))
     f.write("\n")
