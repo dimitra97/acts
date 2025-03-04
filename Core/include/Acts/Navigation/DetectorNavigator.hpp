@@ -167,7 +167,7 @@ class DetectorNavigator {
     if (state.surfaceCandidateIndex == state.surfaceCandidates.size()) {
       ACTS_VERBOSE(volInfo(state)
                    << posInfo(state, position) << "no surface candidates");
-      state.surfaceCandidateIndex = -1;
+      //state.surfaceCandidateIndex = -1;
       return NavigationTarget::None();
     }
     
