@@ -289,7 +289,7 @@ class DetectorNavigator {
       ACTS_VERBOSE(volInfo(state)
                    << posInfo(state, position) << "current surface set to "
                    << state.currentSurface->geometryId());
-      ++state.surfaceCandidateIndex;
+      //++state.surfaceCandidateIndex;
     }
   }
 
