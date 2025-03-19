@@ -155,7 +155,6 @@ class DetectorNavigator {
       return NavigationTarget::None();
     }
 
-    ++state.surfaceCandidateIndex;
 
     fillNavigationState(position, direction, state);
 
