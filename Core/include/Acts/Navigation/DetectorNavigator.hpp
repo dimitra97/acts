@@ -163,16 +163,15 @@ class DetectorNavigator {
       ACTS_VERBOSE(volInfo(state)
                    << posInfo(state, position) << "stepping through surface");
     }
-
+    ++state.surfaceCandidateIndex;
+    
     if (state.surfaceCandidateIndex == state.surfaceCandidates.size()) {
       ACTS_VERBOSE(volInfo(state)
                    << posInfo(state, position) << "no surface candidates");
-      state.surfaceCandidateIndex = -1;
-      return NavigationTarget::None();
+    
+        return NavigationTarget::None();
     }
     
-    std::cout<<"surface candidate index is "<<state.surfaceCandidateIndex<<std::endl;
-
     // Screen output how much is left to try
     ACTS_VERBOSE(volInfo(state) << posInfo(state, position)
                                 << (state.surfaceCandidates.size() -
@@ -193,8 +192,6 @@ class DetectorNavigator {
 
     state.currentSurface = nullptr;
     state.currentPortal = nullptr;
-   
-    std::cout<<"surface candidate index is "<<state.surfaceCandidateIndex<<std::endl;
     return NavigationTarget(surface, candidate.objectIntersection.index(),
                             candidate.boundaryTolerance);
   }

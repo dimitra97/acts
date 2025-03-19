@@ -55,8 +55,20 @@ Acts::Result<void> Acts::Propagator<S, N>::propagate(
       if (preStepSurfaceStatus == IntersectionStatus::reachable ||
           preStepSurfaceStatus == IntersectionStatus::onSurface) {
         return nextTarget;
+      }else{
+        //in case the target is a portal and the target is not reachable, reinitialize the navigator
+        ACTS_VERBOSE("Found unreachable target surface after " << i << " attempts.");
+        if(nextTarget.isPortal){
+          ACTS_VERBOSE("Found unreachable target surface after " << i << " attempts.");
+          ACTS_VERBOSE("Unreachable Target is a portal - try to reinitialize with the current navigation state");
+          auto navInitRes = m_navigator.initialize(state.navigation, state.position, state.direction,
+            state.options.direction);;
+          if (!navInitRes.ok()) {
+            return navInitRes.error();
+          }
       }
     }
+  }
 
     ACTS_ERROR("getNextTarget failed to find a valid target surface after "
                << state.options.maxTargetSkipping << " attempts.");
