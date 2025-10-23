@@ -52,6 +52,26 @@ class PassThroughCalibrator : public MeasurementCalibrator {
       Acts::VectorMultiTrajectory::TrackStateProxy& trackState) const override;
 };
 
+//Calibrator to create the sourceLinks out of muon measurements (e.g DriftRadius or Strip measurements)
+
+class MuonMeasurementsCalibrator : public MeasurementCalibrator {
+
+  public:
+  /// Find the measurement corresponding to the source link.
+  ///
+  /// @param measurements The measurement container
+  /// @param clusters The cluster container (maybe unused)
+  /// @param gctx The geometry context (maybe unused)
+  /// @param cctx The calibration context 
+  /// @param sourceLink The source link to calibrate
+  /// @param trackState The track state to calibrate
+  void calibrate(
+      const MeasurementContainer& measurements,
+      const ClusterContainer* clusters, const Acts::GeometryContext& gctx,
+      const Acts::CalibrationContext& cctx, const Acts::SourceLink& sourceLink,
+      Acts::VectorMultiTrajectory::TrackStateProxy& trackState) const override;
+};
+
 // Adapter class that wraps a MeasurementCalibrator to conform to the
 // core ACTS calibration interface
 class MeasurementCalibratorAdapter {

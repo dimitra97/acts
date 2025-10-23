@@ -45,6 +45,29 @@ void ActsExamples::PassThroughCalibrator::calibrate(
   });
 }
 
+void ActsExamples::MuonMeasurementsCalibrator::calibrate(
+    const MeasurementContainer& measurements,
+    const ClusterContainer* /*clusters*/, const Acts::GeometryContext& /*gctx*/,
+    const Acts::CalibrationContext& /*cctx*/,
+    const Acts::SourceLink& sourceLink,
+    Acts::VectorMultiTrajectory::TrackStateProxy& trackState) const {
+  trackState.setUncalibratedSourceLink(Acts::SourceLink{sourceLink});
+  const IndexSourceLink& idxSourceLink = sourceLink.get<IndexSourceLink>();
+
+  assert((idxSourceLink.index() < measurements.size()) &&
+         "Source link index is outside the container bounds");
+
+  const ConstVariableBoundMeasurementProxy measurement =
+      measurements.getMeasurement(idxSourceLink.index());
+  
+  auto boundLoc0 = measurement.indexOf(Acts::eBoundLoc0);
+  auto boundLoc1 = measurement.indexOf(Acts::eBoundLoc1);
+    
+
+      
+
+}
+
 ActsExamples::MeasurementCalibratorAdapter::MeasurementCalibratorAdapter(
     const MeasurementCalibrator& calibrator,
     const MeasurementContainer& measurements, const ClusterContainer* clusters)
