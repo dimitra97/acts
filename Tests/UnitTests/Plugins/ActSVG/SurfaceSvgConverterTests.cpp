@@ -10,9 +10,11 @@
 
 #include "Acts/Geometry/GeometryContext.hpp"
 #include "Acts/Surfaces/AnnulusBounds.hpp"
+#include "Acts/Surfaces/LineBounds.hpp"
 #include "Acts/Surfaces/ConvexPolygonBounds.hpp"
 #include "Acts/Surfaces/DiamondBounds.hpp"
 #include "Acts/Surfaces/DiscSurface.hpp"
+#include "Acts/Surfaces/StrawSurface.hpp"
 #include "Acts/Surfaces/PlaneSurface.hpp"
 #include "Acts/Surfaces/RadialBounds.hpp"
 #include "Acts/Surfaces/RectangleBounds.hpp"
@@ -194,6 +196,114 @@ BOOST_AUTO_TEST_CASE(DiscSurfaces) {
   auto annulusDisc =
       Surface::makeShared<DiscSurface>(transform, annulusDiscBounds);
   runPlanarTests(*annulusDisc, discStyle, "annulus_disc");
+}
+
+BOOST_AUTO_TEST_CASE(StrawSurfaces){
+
+
+  GeometryContext geoCtx;
+
+  using SurfaceOptions = Svg::SurfaceConverter::Options;
+  std::vector<double> driftRadius;
+  std::vector<Acts::Vector3> globalPos;
+
+  std::ifstream file("/home/damperia/ACTS_Hackathon/hits_dump.csv");
+
+  std::string line;
+  std::getline(file,line);
+
+
+    // Now read the rest normally
+    while (std::getline(file, line)) {
+        if (line.empty()) continue;
+        std::stringstream ss(line);
+        std::string token;
+
+        int event;
+        double gx, gy, gz, r;
+
+        std::getline(ss, token, ',');
+        event = std::stoi(token);
+
+        std::getline(ss, token, ',');
+        gx = std::stod(token);
+
+        std::getline(ss, token, ',');
+        gy = std::stod(token);
+
+        std::getline(ss, token, ',');
+        gz = std::stod(token);
+
+        std::getline(ss, token, ',');
+        r = std::stod(token);
+
+        std::cout << "Event " << event
+                  << ": gx=" << gx
+                  << " gy=" << gy
+                  << " gz=" << gz
+                  << " r=" << r
+                  << std::endl;
+    driftRadius.push_back(r);
+    globalPos.push_back(Acts::Vector3(gx,gy,gz));
+    }
+
+    file.close();
+
+    Svg::Style strawStyle;
+  strawStyle.fillColor = {0, 204, 153};
+  strawStyle.fillOpacity = 0.75;
+  
+  
+  std::vector<actsvg::svg::object> xyTemplates;
+
+
+
+     for(std::size_t i = 0 ; i<driftRadius.size(); i++){
+     Transform3 transform = Transform3::Identity();
+     transform.translation() = globalPos.at(i);
+     double halfZ = 500.;
+     double radius = driftRadius[i];
+     
+    auto lineBounds = std::make_shared<LineBounds>(std::abs(radius), halfZ);
+
+    auto surface = Surface::makeShared<StrawSurface>(transform, lineBounds);
+    SurfaceOptions sOptions;
+    sOptions.style = strawStyle;
+    //sOptions.templateSurface = true;
+
+    // Svg proto object & actual object
+    auto svgTemplate = Svg::SurfaceConverter::convert(geoCtx, *surface, sOptions);
+    auto xyTemplate = Svg::View::xy(svgTemplate,  "template");
+    xyTemplates.push_back(xyTemplate);
+   
+
+ }
+
+ Svg::toFile({xyTemplates}, "strawSurfaces.svg");
+
+
+
+
+
+//  for(std::size_t i = 0 ; i<driftRadius.size(); i++){
+//      Transform3 transform = Transform3::Identity();
+//      transform.translation() = hit_posxyz.at(i);
+//      double halfZ = 500.;
+//     auto lineBounds = std::make_shared<LineBounds>(radius, halfZ);
+
+//     auto surface = Surface::makeShared<StrawSurface>(transform, lineBounds);
+//     SurfaceOptions sOptions;
+//     sOptions.style = style;
+//     sOptions.templateSurface = true;
+
+//     // Svg proto object & actual object
+//     auto svgTemplate = Svg::SurfaceConverter::convert(geoCtx, surface, sOptions);
+//     auto xyTemplate = Svg::View::xy(svgTemplate,  + "_template");
+//     Svg::toFile({xyTemplate}, xyTemplate._id + ".svg");
+
+//  }
+
+
 }
 
 BOOST_AUTO_TEST_SUITE_END()
