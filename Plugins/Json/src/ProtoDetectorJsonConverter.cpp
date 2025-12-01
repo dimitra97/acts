@@ -8,7 +8,7 @@
 
 #include "ActsPlugins/Json/ProtoDetectorJsonConverter.hpp"
 
-#include "Acts/Detector/ProtoDetector.hpp"
+#include "Acts/Geometry/ProtoDetector.hpp"
 #include "Acts/Geometry/Extent.hpp"
 #include "Acts/Surfaces/Surface.hpp"
 #include "Acts/Utilities/BinningData.hpp"
