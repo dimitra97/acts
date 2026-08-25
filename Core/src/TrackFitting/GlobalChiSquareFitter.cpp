@@ -51,7 +51,7 @@ void Gx2fMaterialProperties::updateParameters(
 }
 
 void Gx2fMaterialProperties::updateTrackParameters(
-    BoundTrackParameters& trackPars)  {
+    BoundTrackParameters& trackPars) {
   if (m_scatterer.isValid()) {
     trackPars.parameters()[eBoundPhi] += deltaPhi();
     trackPars.parameters()[eBoundTheta] += deltaTheta();
@@ -103,8 +103,11 @@ void Gx2fMaterialProperties::contributionToGx2fSums(
 
   if (m_eloss.isValid()) {
     const std::size_t eLossIdx = stateIdx + (nDim() - 1ul);
-    extendedSystem.aMatrix()(eLossIdx, eLossIdx) += Acts::square(1./m_eloss.lostSigma());
-    extendedSystem.bVector()(eLossIdx, 0) -= Acts::square(1./m_eloss.lostSigma()) * (m_lostEnergy - m_eloss.lostEnergy());
+    extendedSystem.aMatrix()(eLossIdx, eLossIdx) +=
+        Acts::square(1. / m_eloss.lostSigma());
+    extendedSystem.bVector()(eLossIdx, 0) -=
+        Acts::square(1. / m_eloss.lostSigma()) *
+        (m_lostEnergy - m_eloss.lostEnergy());
     extendedSystem.chi2() += Acts::square(
         (m_lostEnergy - m_eloss.lostEnergy()) / m_eloss.lostSigma());
     ACTS_VERBOSE("Energy loss contributions in contributionToGx2fSums:\n"
@@ -114,14 +117,23 @@ void Gx2fMaterialProperties::contributionToGx2fSums(
                  << "       currently estimated loss: " << m_lostEnergy << "\n"
                  << "  --> chi2 contribution: "
                  << Acts::square((m_lostEnergy - m_eloss.lostEnergy()) /
-                                 m_eloss.lostSigma()) << "\n"
+                                 m_eloss.lostSigma())
+                 << "\n"
                  << "  --> aMatrix contribution: "
-                 << Acts::square(1./m_eloss.lostSigma()) << "\n"
+                 << Acts::square(1. / m_eloss.lostSigma()) << "\n"
                  << "  --> bVector contribution: "
-                 << Acts::square(1./m_eloss.lostSigma()) *
-                        (m_lostEnergy - m_eloss.lostEnergy()))
-                        ;
+                 << Acts::square(1. / m_eloss.lostSigma()) *
+                        (m_lostEnergy - m_eloss.lostEnergy()));
   }
+}
+
+Gx2fMaterialProperties::ELossAtSurface
+Gx2fMaterialProperties::ELossAtSurface::invalidELoss(const GeometryContext&,
+                                                     const CalibrationContext&,
+                                                     const Vector3&,
+                                                     const Vector3&,
+                                                     const Surface&) {
+  return ELossAtSurface{};
 }
 
 void updateGx2fParams(
@@ -140,7 +152,6 @@ void updateGx2fParams(
            "No material properties found for material surface.");
 
     materialMapId->second.updateParameters(deltaParamsExtended, deltaPosition);
-    deltaPosition += materialMapId->second.nDim();
   }
 }
 
@@ -201,10 +212,12 @@ void addMeasurementToGx2fSumsBackend(
     ACTS_DEBUG("Update material jacobian " << deltaPosition << ", "
                                            << extendedSystem.nDims());
 
-    //check the dimension of the material map: 2 means only scattering, 3 means scattering and energy loss
+    // check the dimension of the material map: 2 means only scattering, 3 means
+    // scattering and energy loss
     const std::size_t matDim = materialIndices.at(matSurface) - deltaPosition;
 
-    //check if energy loss is enabled, if yes, we need to add the q/p projection in the extended jacobian
+    // check if energy loss is enabled, if yes, we need to add the q/p
+    // projection in the extended jacobian
     switch (matDim) {
       case 0:  // no material
         break;
@@ -221,10 +234,10 @@ void addMeasurementToGx2fSumsBackend(
             jac * phiThetaQOverPProjector;
         break;
       default:
-        ACTS_ERROR("Invalid material dimension: " << matDim<< " - this should be 1, 2, or 3.");
+        ACTS_ERROR("Invalid material dimension: "
+                   << matDim << " - this should be 1, 2, or 3.");
         throw std::domain_error("Invalid material dimension.");
     }
-    
   }
 
   const Eigen::MatrixXd projJacobian = projector * extendedJacobian;
@@ -272,7 +285,7 @@ void addMeasurementToGx2fSumsBackend(
       << "\n"
       << "    safeInvCovMeasurement:\n"
       << (*safeInvCovMeasurement));
-} 
+}
 
 Eigen::VectorXd computeGx2fDeltaParams(const Gx2fSystem& extendedSystem) {
   return extendedSystem.aMatrix().colPivHouseholderQr().solve(

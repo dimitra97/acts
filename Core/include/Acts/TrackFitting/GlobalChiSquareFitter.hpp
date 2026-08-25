@@ -77,11 +77,13 @@ struct Gx2fMaterialProperties {
     /// The amount of lost energy (Bethe bloch / measurement)
     /// @returns The lost energy at the surface
     constexpr double lostEnergy() const { return m_lostEnergy; }
-
+    /// The uncertainty on the energy loss
+    /// @return  Uncertainty on the lost energy at the surface
     constexpr double lostSigma() const { return m_lossSigma; }
 
     /// Default constructor to construct an invalid energy loss
     ELossAtSurface() = default;
+
     /// Constructor taking the measured energy loss and its uncertainty
     /// @param energy: The measured lost energy at the corresponding surface
     /// @param sigma: The uncertainty on the measured lost energy
@@ -90,6 +92,7 @@ struct Gx2fMaterialProperties {
           m_lostEnergy{energy},
           m_lossSigma{sigma} {}
 
+    /// Absorb the energy loss from another object.
     ELossAtSurface& operator+=(const ELossAtSurface& other) noexcept {
       if (&other != this && other.isValid()) {
         m_lostEnergy += other.m_lostEnergy;
@@ -98,6 +101,20 @@ struct Gx2fMaterialProperties {
       }
       return *this;
     }
+
+    /// Function that satisfies the @ref eLossAccumulator delegate pattern and the produces an invalid energy loss
+    /// at any passed material surface
+    /// @param geoContext:The geometry context to align the material surface
+    /// @param calibContext: The calibration context to retrieve the detector conditions to apply the calibration on the
+    ///                      contributing calorimeter cells
+    /// @param pos: Current position along the trajectory (global frame)
+    /// @param dir:  Trajectory direction at the current position (glboal frame)
+    /// @param matSurface: The material surface at which the propagtions stops
+    /// @return An invalid EnergyLoss such that the loss will be estimated from the Bethe-Bloch formula
+    static ELossAtSurface invalidELoss(const GeometryContext& geoContext,
+                                       const CalibrationContext& calibContext,
+                                       const Vector3& pos, const Vector3& dir,
+                                       const Surface& matSurface);
 
    private:
     /// Flag toggling whether the parameters are valid
@@ -112,13 +129,14 @@ struct Gx2fMaterialProperties {
   struct ScatteringAtSurface {
     /// Is the scattering uncertainty valid
     constexpr bool isValid() const { return m_isValid; }
-
+    /// Uncertainty on the scattering angle
     constexpr double sigma() const { return m_sigma; }
     /// Default constructor to construct an invalid scatterer
     ScatteringAtSurface() = default;
     /// Constructor taking the width of the scatterer
-    explicit ScatteringAtSurface(const double sigma)
-        : m_isValid{sigma > Acts::s_epsilon}, m_sigma{sigma} {}
+    /// @param _sigma: The width of the scatterer
+    explicit ScatteringAtSurface(const double _sigma)
+        : m_isValid{_sigma > Acts::s_epsilon}, m_sigma{_sigma} {}
 
     ScatteringAtSurface& operator+=(const ScatteringAtSurface& other) {
       if (&other != this && other.isValid()) {
@@ -158,11 +176,8 @@ struct Gx2fMaterialProperties {
     return (m_scatterer.isValid() ? 2ul : 0ul) +
            (m_eloss.isValid() ? 1ul : 0ul);
   }
-  ScatteringAtSurface& scatterer() { return m_scatterer; }
 
   const ScatteringAtSurface& scatterer() const { return m_scatterer; }
-
-  ELossAtSurface& energyLoss() { return m_eloss; }
 
   const ELossAtSurface& energyLoss() const { return m_eloss; }
 
@@ -172,11 +187,13 @@ struct Gx2fMaterialProperties {
 
   constexpr double lostEnergy() const { return m_lostEnergy; }
 
+  constexpr double qOverP() const { return m_qOverPnew; }
+
   /// Update the track parameters with the scattering angles and
   //  subtract the energy loss from the q/p parameters
   /// @param trackPars The bound track parameters fetched from the stepper which
   /// will be fed back to the stepper to adjust the trajectory position
-  void updateTrackParameters(BoundTrackParameters& trackPars) ;
+  void updateTrackParameters(BoundTrackParameters& trackPars);
 
   void contributionToGx2fSums(Gx2fSystem& extendedSystem, const double theta,
                               const std::size_t firstParamIdx,
@@ -184,7 +201,7 @@ struct Gx2fMaterialProperties {
 
   void updateParameters(const Eigen::VectorXd& deltaParamsExtended,
                         const std::size_t firstParamIdx);
-  double qOverP() const { return m_qOverPnew; }
+
  private:
   /// Description of the scattering angles
   ScatteringAtSurface m_scatterer{};
@@ -224,11 +241,24 @@ struct Gx2FitterExtensions {
   /// Type alias for outlier finder delegate to identify measurement outliers
   using OutlierFinder = Delegate<bool(ConstTrackStateProxy)>;
 
-  /// Type alias to measure the energy loss at a given surface
+  /// Type alias of a delegate to retrieve the measured energy loss at a given
+  /// surface e.g. from accumulating the calorimeter cell energies around the
+  /// trajectory
+  /// @param geoContext: The geometry context to align the surface in space
+  /// @param calibContext: Calibration context to access the detector conditions
+  /// @param pos: The position along the trajectory (global frame)
+  /// @param dir: Track direction at the current position (global frame)
+  /// @param matSurf: Reference to the material surface
   using ELossAccumulator = Delegate<Gx2fMaterialProperties::ELossAtSurface(
-      const CalibrationContext&, const Vector3& pos, const Vector3& dir,
-      const Surface& matSurf)>;
+      const GeometryContext& geoContext, const CalibrationContext& calibContext,
+      const Vector3& pos, const Vector3& dir, const Surface& matSurf)>;
 
+  /// The elossAcumulator is the hook to use the measured energy loss instead of
+  /// the estimated energy loss from the tracking geometry. The accumulator is
+  /// called at every material surface. If the accumulator returns a valid
+  /// ELossAtSurface object i.e. the lost energy and the associated uncertainty
+  /// need to be greater than zero, this value is taken instead of the
+  /// parameterized energy loss from the Highland formula
   ELossAccumulator elossAccumulator;
   /// The Calibrator is a dedicated calibration algorithm that allows
   /// to calibrate measurements using track information, this could be
@@ -247,6 +277,8 @@ struct Gx2FitterExtensions {
     calibrator.template connect<&Acts::detail::voidFitterCalibrator<traj_t>>();
     outlierFinder.template connect<&Acts::detail::voidOutlierFinder<traj_t>>();
     surfaceAccessor.connect<&Acts::detail::voidSurfaceAccessor>();
+    elossAccumulator
+        .connect<&Gx2fMaterialProperties::ELossAtSurface::invalidELoss>();
   }
 };
 
@@ -1024,26 +1056,24 @@ class Gx2Fitter {
       }
 
       if (doEnergyLoss) {
-        if (extensions.elossAccumulator.connected()) {
-          eLoss = extensions.elossAccumulator(
-              *calibrationContext, stepper.position(state.stepping),
-              stepper.direction(state.stepping), *surface
-
-          );
-        }
+        eLoss = extensions.elossAccumulator(
+            state.geoContext, *calibrationContext,
+            stepper.position(state.stepping), stepper.direction(state.stepping),
+            *surface);
+        /// There is measurement of the energy loss but the surface material
+        /// is good. Calculate the expected energy loss from Bethe-Bloch.
         if (!eLoss.isValid() && goodSlab) {
           const auto& particle = parametersWithHypothesis->particleHypothesis();
 
+          const double qOverP = stepper.qOverP(state.stepping);
+
           eLoss = ELossAtSurface{
-              computeEnergyLossMean(
-                  slab, particle.absolutePdg(), particle.mass(),
-                  parametersWithHypothesis->parameters()[eBoundQOverP],
-                  particle.absoluteCharge()),
+              computeEnergyLossMean(slab, particle.absolutePdg(),
+                                    particle.mass(), qOverP,
+                                    particle.absoluteCharge()),
               /// Energy loss uncertainty
               static_cast<double>(Acts::computeEnergyLossLandauSigma(
-                  slab, particle.mass(),
-                  static_cast<float>(
-                      parametersWithHypothesis->parameters()[eBoundQOverP]),
+                  slab, particle.mass(), static_cast<float>(qOverP),
                   particle.absoluteCharge()))};
         }
       }
