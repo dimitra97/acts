@@ -788,14 +788,12 @@ class Gx2Fitter {
 
     Gx2FitterExtensions<traj_t> extensions;
 
-    /// The Surface being
-    SurfaceReached targetReached;
-
     /// Calibration context for the fit
     const CalibrationContext* calibrationContext{nullptr};
 
-    /// The particle hypothesis is needed for estimating scattering angles
-    const BoundTrackParameters* parametersWithHypothesis = nullptr;
+    /// Start parameters of the track fit. The hypothesis is needed
+    /// to estimate the material effects
+    const BoundTrackParameters* startParameters = nullptr;
 
     /// @brief Gx2f actor operation
     ///
@@ -1039,13 +1037,12 @@ class Gx2Fitter {
       ScatteringAtSurface scatterer{};
 
       if (goodSlab) {
-        const auto& particle = parametersWithHypothesis->particleHypothesis();
+        const auto& particle = startParameters->particleHypothesis();
 
         const double sigma =
             static_cast<double>(Acts::computeMultipleScatteringTheta0(
                 slab, particle.absolutePdg(), particle.mass(),
-                static_cast<float>(
-                    parametersWithHypothesis->parameters()[eBoundQOverP]),
+                static_cast<float>(startParameters->parameters()[eBoundQOverP]),
                 particle.absoluteCharge()));
         ACTS_VERBOSE("        The Highland formula gives sigma = " << sigma);
 
@@ -1063,7 +1060,7 @@ class Gx2Fitter {
         /// There is measurement of the energy loss but the surface material
         /// is good. Calculate the expected energy loss from Bethe-Bloch.
         if (!eLoss.isValid() && goodSlab) {
-          const auto& particle = parametersWithHypothesis->particleHypothesis();
+          const auto& particle = startParameters->particleHypothesis();
 
           const double qOverP = stepper.qOverP(state.stepping);
 
@@ -1221,7 +1218,7 @@ class Gx2Fitter {
       gx2fActor.extensions = gx2fOptions.extensions;
       gx2fActor.calibrationContext = &gx2fOptions.calibrationContext.get();
       gx2fActor.actorLogger = m_actorLogger.get();
-      gx2fActor.parametersWithHypothesis = &params;
+      gx2fActor.startParameters = &params;
 
       auto propagatorState = m_propagator.makeState(propagatorOptions);
 
@@ -1384,7 +1381,7 @@ class Gx2Fitter {
       gx2fActor.extensions = gx2fOptions.extensions;
       gx2fActor.calibrationContext = &gx2fOptions.calibrationContext.get();
       gx2fActor.actorLogger = m_actorLogger.get();
-      gx2fActor.parametersWithHypothesis = &params;
+      gx2fActor.startParameters = &params;
       gx2fActor.scatteringCutOff = gx2fOptions.scatteringCutOff;
       gx2fActor.elossCutOff = gx2fOptions.elossCutOff;
 
@@ -1523,7 +1520,7 @@ class Gx2Fitter {
       gx2fActor.extensions = gx2fOptions.extensions;
       gx2fActor.calibrationContext = &gx2fOptions.calibrationContext.get();
       gx2fActor.actorLogger = m_actorLogger.get();
-      gx2fActor.parametersWithHypothesis = &params;
+      gx2fActor.startParameters = &params;
 
       auto propagatorState = m_propagator.makeState(propagatorOptions);
 
